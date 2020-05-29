@@ -14,6 +14,7 @@
                         @edit-return="editReturnMap"
                         @popup-visible="onPopUpEvent(true)"
                         @popup-hidden="onPopUpEvent(false)"
+                        class="mr-1"
                     >
                         <template v-slot:buttonContent>add</template>
                         <template v-slot:title>add new map</template>
@@ -175,28 +176,6 @@ module.exports = {
         bulkReturnList: function(list) {
             this.$emit("bulk-return", list);
         },
-        delete: function(map) {
-            console.warn("delete map:", {
-                id: map.id,
-                map: this.strMapName(map),
-                stage: map.stage,
-                mod: map.mod,
-                index: map.index,
-                selector: map.selector,
-                submitter: map.submitter
-            });
-        },
-        upload: function(map) {
-            console.warn("upload map:", {
-                id: map.id,
-                map: this.strMapName(map),
-                stage: map.stage,
-                mod: map.mod,
-                index: map.index,
-                selector: map.selector,
-                submitter: map.submitter
-            });
-        }
     }
 };
 </script>

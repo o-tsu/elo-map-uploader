@@ -2,20 +2,13 @@
     <b-col>
         <b-overlay :show="!ready" rounded="sm">
             <b-card
-                v-bind:img-src="img"
-                img-alt="Image"
-                img-top
                 no-body
-                tag="article"
                 style="min-width: 27em;"
                 @mouseover="hoverCard(true)"
                 @mouseleave="hoverCard(false)"
                 class="overflow-hidden mb-2"
             >
                 <template v-slot:header>
-                    <h6 style="overflow: hidden;text-overflow: ellipsis;">
-                        {{ strMapName }}
-                    </h6>
                     <b-badge pill class="mr-1">{{relativeIndex}}</b-badge>
                     <KVBadge
                         v-for="(section,sectionName,index) in difficultyBreakdown"
@@ -24,7 +17,14 @@
                         pill
                         :variant="variant(index)"
                     ></KVBadge>
+                    <h6 style="overflow: hidden;text-overflow: ellipsis;">{{ strMapName }}</h6>
                 </template>
+                <b-card-img
+                    :src="img"
+                    :img-alt="strMapName"
+                    class="rounded-0"
+                    @error="setFallbackCover"
+                />
                 <b-collapse v-model="hover">
                     <b-card-body>
                         <span v-html="text"></span>
@@ -40,7 +40,7 @@
                             >{{index}}</b-button>
                         </b-button-group>
                         <!-- not hovered -->
-                        <b-collapse :visible="!hover"></b-collapse>
+                        <!-- <b-collapse :visible="!hover"></b-collapse> -->
                     </b-card-body>
                     <b-collapse
                         v-for="(list,index) in {objects: beatmap.objects,length: readableLength}"
@@ -87,6 +87,7 @@
                                 </EditMap>
                                 <!--                                 <b-button variant="warning">update</b-button> -->
                                 <b-button variant="danger" @click.once="deleteMap()">Delete</b-button>
+                                <!-- <b-button variant="info" @click.once="testEvent()">test event</b-button> -->
                                 <b-dropdown text="Move To">
                                     <b-dropdown-group
                                         v-for="(stage,stageName) in splitted"
@@ -117,7 +118,7 @@
     </b-col>
 </template>
 <script>
-// const { EloMap } = require('elo-mappool-client');
+const { MapList } = require("elo-mappool-client");
 const modHelper = require("../helpers/enum");
 // const defaultString = {
 //     type: String,
@@ -171,7 +172,8 @@ module.exports = {
             onPopUp: false,
             onPopUpDelay: undefined,
             confirmVariant: "warning",
-            autoUpdate: true
+            autoUpdate: true,
+            fallbackCover: false
         };
     },
     mounted: async function() {
@@ -179,13 +181,13 @@ module.exports = {
     },
     computed: {
         img: function() {
-            if (this.beatmap.banchoResultReady)
+            if (this.beatmap.banchoResultReady && !this.fallbackCover)
                 return `https://assets.ppy.sh/beatmaps/${this.beatmap.beatmapSetId}/covers/card.jpg`;
             else
-                return `https://via.placeholder.com/400x100?text=@Explosive...`;
+                return `https://via.placeholder.com/800x200?text=@Explosive...`;
         },
         strMapName: function() {
-            // ${this.beatmap.artist} - 
+            // ${this.beatmap.artist} -
             if (this.beatmap.banchoResultReady)
                 return `${this.beatmap.title} [${this.beatmap.version}]`;
             else return "等爆炸消息...";
@@ -240,9 +242,7 @@ module.exports = {
                         HP: d.drain
                     },
                     stars: {
-                        "🌟": d.rating.toPrecision(2),
-                        "🎯": d.aim.toPrecision(2),
-                        "💪🏻": d.speed.toPrecision(2)
+                        "🌟": d.rating.toPrecision(2)
                     }
                 };
             } else {
@@ -285,11 +285,12 @@ module.exports = {
             }
             return returntext.trim();
         },
-        deleteMap: function() {
-            return this.delete();
+        deleteMap: async function() {
+            return await this.delete();
         },
         //index -=1
         moveForward: async function(autoUpdate = this.autoUpdate || true) {
+            // console.log("move-forward");
             const index = this.beatmap.index;
             const last = index - 1;
             if (index > 1) {
@@ -312,7 +313,11 @@ module.exports = {
             }
         },
         //index +=1
-        moveBackward: async function(autoUpdate = this.autoUpdate || true) {
+        moveBackward: async function(
+            autoUpdate = this.autoUpdate || true,
+            updateOtherMaps = true
+        ) {
+            // console.log("move-backward");
             const index = this.beatmap.index;
             const next = index + 1;
             const _highestSameModIndex = this.highestSameModIndex;
@@ -327,28 +332,35 @@ module.exports = {
                     occupiedMap.index -= 1;
                     if (autoUpdate) await this.upload(occupiedMap);
                 }
-                if (autoUpdate) await this.delete();
+                if (autoUpdate || updateOtherMaps) await this.delete();
                 this.beatmap.index += 1;
-                if (autoUpdate) await this.upload();
+                if (autoUpdate || updateOtherMaps) await this.upload();
             } else {
                 return;
             }
         },
-        moveToStart: async function(autoUpdate = this.autoUpdate || true) {
+        moveToStart: async function(
+            autoUpdate = this.autoUpdate || true,
+            updateOtherMaps = true
+        ) {
             const index = this.beatmap.index;
             if (index > 1) {
                 if (autoUpdate) await this.delete();
                 this.beatmap.index = -1;
 
-                this.sameMods
-                    .filter(map => map.index >= 1 && map.index <= index)
-                    .map(async map => {
-                        if (autoUpdate) await this.delete(map);
-                        map.index += 1;
-                        if (autoUpdate) await this.upload(map);
-                    });
+                await Promise.all(
+                    this.sameMods
+                        .filter(map => map.index >= 1 && map.index <= index)
+                        .map(async map => {
+                            if (autoUpdate || updateOtherMaps)
+                                await this.delete(map);
+                            map.index += 1;
+                            if (autoUpdate || updateOtherMaps)
+                                await this.upload(map);
+                        })
+                );
                 this.beatmap.index = 1;
-                this.upload();
+                if (autoUpdate) await this.upload();
             } else {
                 return;
             }
@@ -360,24 +372,28 @@ module.exports = {
                 if (autoUpdate) await this.delete();
                 this.beatmap.index = -1;
 
-                this.sameMods
-                    .filter(
-                        map =>
-                            map.index <= _highestSameModIndex &&
-                            map.index > index
-                    )
-                    .map(async map => {
-                        if (autoUpdate) await this.delete(map);
-                        map.index -= 1;
-                        if (autoUpdate) await this.upload(map);
-                    });
+                await Promise.all(
+                    this.sameMods
+                        .filter(
+                            map =>
+                                map.index <= _highestSameModIndex &&
+                                map.index > index
+                        )
+                        .map(async map => {
+                            if (autoUpdate) await this.delete(map);
+                            map.index -= 1;
+                            if (autoUpdate) await this.upload(map);
+                            // return map;
+                        })
+                );
+                // this.bulkUpload(maps);
                 this.beatmap.index = _highestSameModIndex;
-                this.upload();
+                if (autoUpdate) await this.upload();
             } else {
                 return;
             }
         },
-        moveToOtherBracket: async function(
+        async moveToOtherBracket(
             stage,
             mod,
             autoUpdate = this.autoUpdate || true
@@ -388,14 +404,14 @@ module.exports = {
             ) {
                 return;
             }
-            if (autoUpdate) this.delete();
-            this.moveToEnd(false);
+            if (autoUpdate) await this.delete();
+            await this.moveToEnd(false);
             this.beatmap.stage = stage;
             this.beatmap.mod = mod;
             this.beatmap.index = this.getNewIndexInStageMod(stage, mod);
             //dest[destLength + 1] = this.beatmap;
 
-            if (autoUpdate) this.upload();
+            if (autoUpdate) await this.upload();
         },
 
         hoverCard(on) {
@@ -411,6 +427,9 @@ module.exports = {
                 }
             }
         },
+        testEvent() {
+            this.$emit("test-event", { type: "test" });
+        },
 
         onPopUpEvent: function(on) {
             if (on) {
@@ -423,7 +442,7 @@ module.exports = {
         },
         getNewIndexInStageMod: function(stage, mod) {
             let index = this.getStageModHighestIndex(stage, mod);
-            console.info(`got new index for map:`, this.strMapName, index);
+            console.info(`got new index for map:`, this.strMapName, index + 1);
             return index + 1;
         },
         getStageModHighestIndex(stage, mod) {
@@ -433,51 +452,61 @@ module.exports = {
             const highest = dest ? Math.max(...dest.map(map => map.index)) : 0;
             return highest;
         },
-        editReturnMap: function(beatmap) {
-            this.delete();
+        editReturnMap: async function(beatmap) {
+            this.$root.$emit("t-log", beatmap, "edit returns");
+            await this.delete();
             const modChanged = beatmap.modChanged;
             delete beatmap.modChanged;
 
             this.beatmap = Object.assign(this.beatmap, beatmap);
             if (modChanged) {
-                this.index = this.getNewIndexInStageMod(
+                this.beatmap.index = this.getNewIndexInStageMod(
                     beatmap.stage,
                     beatmap.mod
                 );
             }
-            this.beatmap.banchoResult();
+            await this.beatmap.banchoResult();
 
-            this.upload();
+            await this.upload();
         },
-        delete: function(map = this.beatmap) {
-            console.warn("delete map:", {
-                id: map.id,
-                stage: map.stage,
-                mod: map.mod,
-                index: map.index
-            });
+        async delete(map = this.beatmap) {
+            this.$root.$emit("delete-map", map);
+            const result = await map.delete();
+            this.$root.$emit("t-log", result);
+            return result;
         },
-        upload: function(map = this.beatmap) {
-            console.warn("upload map:", {
-                id: map.id,
-                stage: map.stage,
-                mod: map.mod,
-                index: map.index
-            });
+        async upload(map = this.beatmap) {
+            this.$root.$emit("upload-map", map);
+            const result = await map.upload();
+            this.$root.$emit("t-log", result);
+            return result;
         },
-        resort: function() {
-            for (let mods in this.sameStage) {
-                mods = Object.entries(mods).reduce((acc, map) => {
-                    acc[map.index] = map;
-                    return acc;
-                });
-            }
+        async bulkUpload(maps = [this.beatmap]) {
+            const mapList = new MapList(
+                maps,
+                this.beatmap.pool,
+                this.beatmap.api
+            );
+            this.$root.$emit("t-log", maps, "bulk-uploads");
+            const result = await mapList.upload();
+            this.$root.$emit("t-log", result);
         },
+        // resort: function() {
+        //     for (let mods in this.sameStage) {
+        //         mods = Object.entries(mods).reduce((acc, map) => {
+        //             acc[map.index] = map;
+        //             return acc;
+        //         });
+        //     }
+        // },
         variant: function(modifier) {
             const choice = ["primary", "success"];
             const length = choice.length;
             const leftOver = modifier % length;
             return choice[leftOver];
+        },
+        setFallbackCover() {
+            this.fallbackCover = true;
         }
     }
 };

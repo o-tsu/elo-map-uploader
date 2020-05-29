@@ -35,17 +35,23 @@
 export default {
     data() {
         return {
-            pool: ""
+            pool: "",
+            newPoolSymbol : Symbol('new pool').toString(),
         };
     },
     props: ["pools", "user"],
     computed: {
         nameOfPools: function() {
             if (this.pools) {
-                return this.pools.map(pool => ({
+                const pools = this.pools.map(pool => ({
                     value: pool.id,
                     text: pool.name
                 }));
+                pools.push({
+                    value: this.newPoolSymbol,
+                    text: 'create new pool',
+                })
+                return pools;
             } else {
                 return [];
             }
@@ -64,7 +70,6 @@ export default {
             console.log("switch-pool event", event);
             this.$emit("switch-pool", {
                 id: event.value,
-                name: event.name
             });
         }
     }

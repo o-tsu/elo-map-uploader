@@ -97,6 +97,7 @@
                     invalid-feedback="This' not right"
                 >
                     <b-form-input
+                        type="number"
                         :disabled="disableIndex"
                         ref="index"
                         :id="`edit-${editIndex}-index`"
@@ -301,7 +302,7 @@ export default {
                     id: this.bid,
                     stage: this.stage,
                     mod: this.mod,
-                    index: this.index,
+                    index: parseInt(this.index),
                     selector: this.selector,
                     modChanged: this.modChanged
                 });

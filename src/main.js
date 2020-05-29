@@ -21,7 +21,7 @@ Vue.use(UniqueId);
 Vue.config.productionTip = false
 
 const { MapPool } = require('elo-mappool-client');
-let token = "61d14cdf3de665e07916ca92be1bc54ed59d64f03ee5145d137926fa3f8e775d67aa6ee38cf04186aa6a60e03cb0b4ebb2db808956a482cdd2258215a3034188";
+let token = "b3b539d7b4310cc90695c391c2725009d2e2c93d13d6f373945e5de53eaa8449862efbe3ef5c8db027f85f42b3d530ae1fd5e52e4b03b582e04ed484eb7d3db4";
 let submitter = 1123053
 
 async function start() {
