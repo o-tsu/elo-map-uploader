@@ -191,8 +191,9 @@ module.exports = {
             // Use a shorter name for this.$createElement
             // const h = this.$createElement;
             // Create the title
-            const vNodesTitle = h("strong", { class: "mr-2" }, message);
-            return vNodesTitle;
+            // const vNodesTitle = h("strong", { class: "mr-2" }, message);
+            // return vNodesTitle;
+            return <strong class="mr-2">{message}</strong>
         },
         createJSONViewer(message) {
             // const h = this.$createElement;
