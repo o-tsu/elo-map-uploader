@@ -189,7 +189,7 @@ module.exports = {
         },
         createTitle(message) {
             // Use a shorter name for this.$createElement
-            const h = this.$createElement;
+            // const h = this.$createElement;
             // Create the title
             const vNodesTitle = h("strong", { class: "mr-2" }, message);
             return vNodesTitle;
