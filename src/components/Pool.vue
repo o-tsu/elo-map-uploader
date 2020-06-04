@@ -9,7 +9,7 @@
                     <b-button-toolbar>
                         <b-button-group>
                             <b-button>delete all maps</b-button>
-                            <b-button>sync</b-button>
+                            <b-button @click="getMaps">sync</b-button>
                         </b-button-group>
                     </b-button-toolbar>
                 </div>
@@ -62,27 +62,52 @@ module.exports = {
         NewMap,
         VueJsonPretty
     },
+    // watch: {
+    //     pool() {
+    //         this.pool.getMaps();
+    //     }
+    // },
     mounted() {
         this.$root.$on("delete-map", this.deleteBeatmap);
         this.$root.$on("upload-map", this.uploadBeatmap);
         this.$root.$on("t-log", this.logEvent);
+        this.$root.$on("need-update", this.updatePool);
     },
     beforeDestroy() {
         this.$root.$off("delete-map", this.deleteBeatmap);
         this.$root.$off("upload-map", this.uploadBeatmap);
         this.$root.$off("t-log", this.logEvent);
+        this.$root.$off("need-update", this.updatePool);
     },
     data: function() {
         return {
-            loaded: false
+            loaded: false,
+            hh: 0,
+            // maps: [],
         };
     },
     asyncComputed: {
-        maps: async function() {
-            return await this.refreshMaps();
+        maps: {
+            async get() {
+                if (!this.pool) return [];
+                if (!this.pool.maps) await this.getMaps();
+                return this.pool.maps.maps;
+            },
+            set(val) {
+                console.log(val);
+                this.pool.maps.maps = val;
+                // console.log(this.pool.maps.maps);
+                this.$forceUpdate();
+            },
+            // watch: ["hh","pool"]
         }
     },
     computed: {
+        // maps: function() {
+        //     if (!this.pool) return [];
+        //     if (!this.pool.maps) return [];
+        //     return this.pool.maps.maps;
+        // },
         emptyPool: function() {
             if (this.maps !== null) {
                 return this.maps.length == 0;
@@ -115,8 +140,8 @@ module.exports = {
             let result;
             if (this.maps !== null) {
                 result = this.maps.reduce((acc, cur) => {
-                    // console.log('pool.mods.reduce',cur.mod)
-                    const rawMod = modHelper.toEnum(cur.mod);
+                    // console.log('pool.mods.reduce',cur.mods)
+                    const rawMod = modHelper.toEnum(cur.mods);
                     if (!acc.includes(rawMod)) {
                         acc.push(rawMod);
                     }
@@ -146,11 +171,23 @@ module.exports = {
         }
     },
     methods: {
-        async refreshMaps() {
+        async updatePool() {
+            // this.hh += 1;
+            // console.log("need update");
+            // delete this.pool.maps;
+            // this.$forceUpdate();
+            // return this.getMaps();
+            // return this.refreshMaps();
+        },
+        async getMaps() {
+            console.log('get maps')
             if (this.pool) {
+                // this.pool.maps = undefined
                 await this.pool.getMaps();
+                // console.log('get maps done')
                 this.loaded = true;
-                return this.pool.maps.maps;
+                // return this.pool.maps.maps;
+                this.maps = this.pool.maps.maps;
             } else {
                 return [];
             }
@@ -158,7 +195,7 @@ module.exports = {
         splitListByMods: function(list) {
             return this.mods.reduce((acc, mod) => {
                 const maps = list.filter(map => {
-                    return modHelper.toEnum(map.mod) == modHelper.toEnum(mod);
+                    return modHelper.toEnum(map.mods) == modHelper.toEnum(mod);
                 });
                 acc[modHelper.toEnum(mod)] = this.createListFromArrayByIndex(
                     maps
@@ -193,7 +230,7 @@ module.exports = {
             // Create the title
             // const vNodesTitle = h("strong", { class: "mr-2" }, message);
             // return vNodesTitle;
-            return <strong class="mr-2">{message}</strong>
+            return <strong class="mr-2">{message}</strong>;
         },
         createJSONViewer(message) {
             // const h = this.$createElement;
@@ -202,7 +239,7 @@ module.exports = {
             // return vNodesMsg
             return <VueJsonPretty data={message}></VueJsonPretty>;
         },
-        popToast(vNodesMsg, vNodesTitle, { variant= 'info', toster } = {}) {
+        popToast(vNodesMsg, vNodesTitle, { variant = "info", toster } = {}) {
             // Pass the VNodes as an array for message and title
             this.$bvToast.toast([vNodesMsg], {
                 title: [vNodesTitle],
@@ -215,7 +252,7 @@ module.exports = {
         //     return this.maps.find(
         //         bm =>
         //             bm.stage == stage &&
-        //             modHelper.toEnum(bm.mod) == modHelper.toEnum(mod) &&
+        //             modHelper.toEnum(bm.mods) == modHelper.toEnum(mod) &&
         //             bm.index == index
         //     );
         // },
@@ -228,7 +265,7 @@ module.exports = {
         //     if (index > 1) {
         //         const occupiedMap = this.relativeBeatmapExists(
         //             beatmap.stage,
-        //             beatmap.mod,
+        //             beatmap.mods,
         //             target
         //         );
         //         if (occupiedMap) {
@@ -247,7 +284,7 @@ module.exports = {
                 this.createJSONViewer({
                     id: map.id,
                     stage: map.stage,
-                    mod: map.mod,
+                    mod: map.mods,
                     index: map.index
                 }),
                 this.createTitle("delete map"),
@@ -255,13 +292,15 @@ module.exports = {
                     variant: "danger"
                 }
             );
+            this.maps = this.maps.filter(bm => bm._id !== map._id);
+            this.hh += 1;
         },
         async uploadBeatmap(map) {
             this.popToast(
                 this.createJSONViewer({
                     id: map.id,
                     stage: map.stage,
-                    mod: map.mod,
+                    mod: map.mods,
                     index: map.index
                 }),
                 this.createTitle("upload map"),
@@ -269,14 +308,16 @@ module.exports = {
                     variant: "info"
                 }
             );
+            this.maps.push(map);
+            this.hh += 1;
         },
-        async logEvent(e,title = 'result',{variant = 'info'} = {}) {
+        async logEvent(e, title = "result", { variant = "info" } = {}) {
             console.log(e);
             this.popToast(
                 this.createJSONViewer(JSON.parse(JSON.stringify(e))),
                 this.createTitle(title),
                 {
-                    variant,
+                    variant
                 }
             );
         }

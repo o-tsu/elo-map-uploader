@@ -162,14 +162,16 @@ module.exports = {
             return destLength;
         },
         editReturnMap: async function(beatmap) {
-            // this.log(beatmap, "new map returned bm");
+            // this.$root.$emit("t-log",beatmap, "new map returned bm");
             const map = EloMap.create(beatmap, this.pool, this.pool.api);
             await map.banchoResult();
             map.index = this.getNewIndexInStageMod(
                 map,
                 beatmap.stage,
-                beatmap.mod
+                beatmap.mods
             );
+            this.$root.$emit("t-log",map.toApiStruct(), "created bm");
+            
             this.pool.maps.maps.push(map);
             // this.upload(map);
             const result = await map.upload()

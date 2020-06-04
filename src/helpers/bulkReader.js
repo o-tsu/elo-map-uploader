@@ -57,7 +57,7 @@ class Reader {
     instructionLine(line) {
         Object.entries({
             '.stage': 'switchStage',
-            '.mod': 'switchMod',
+            '.mods': 'switchMod',
             '.selector': 'switchSelector',
             '.submitter': 'switchSubmitter',
         }).map(([instruction, action]) => {
@@ -97,7 +97,7 @@ class Reader {
         if (final.stage !== this.currentStage) {
             this.createStageIfNotExist(final.stage);
         }
-        const rawMod = modHelper.toEnum(final.mod);
+        const rawMod = modHelper.toEnum(final.mods);
         if (!this.stages[final.stage][rawMod]) {
             this.createModIfNotExists(rawMod, final.stage);
         }
@@ -108,7 +108,7 @@ class Reader {
             id: data.id,
             hash: data.hash,
             stage: this.currentStage,
-            mod: modHelper.toModList(this.currentMod),
+            mods: modHelper.toModList(this.currentMod),
             selector: this.currentSelector,
             submitter: this.currentSubmitter,
         })
@@ -118,9 +118,9 @@ class Reader {
             this.stages[stage] = {};
         }
     }
-    createModIfNotExists(mod, stage = this.currentStage) {
-        if (!this.stages[stage][mod]) {
-            this.stages[stage][mod] = [];
+    createModIfNotExists(mods, stage = this.currentStage) {
+        if (!this.stages[stage][mods]) {
+            this.stages[stage][mods] = [];
         }
     }
     switchStage(stage) {
@@ -170,15 +170,15 @@ class Reader {
 //     '.selector=1123053',
 //     '.submitter=1123053',
 //     '.stage=stage1',
-//     '.mod=',
+//     '.mods=',
 //     1123123,
-//     '*json={"hash":"114514","stage":"stage3","mod":["HR","DT"],"selector":"1123053","submitter":"1123053"}',
-//     '.mod=HD,DT',
+//     '*json={"hash":"114514","stage":"stage3","mods":["HR","DT"],"selector":"1123053","submitter":"1123053"}',
+//     '.mods=HD,DT',
 //     1573320,
 //     1951733,
-//     '.mod=DT',
+//     '.mods=DT',
 //     1762429,
-//     '.mod=HR',
+//     '.mods=HR',
 //     1816243,
 //     '#defaultLine=hash',
 //     md5('114514'),

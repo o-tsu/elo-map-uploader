@@ -81,7 +81,7 @@ module.exports = {
         splitListByMods: function(list) {
             return this.mods.reduce((acc, mod) => {
                 const maps = list.filter(map => {
-                    return modHelper.toEnum(map.mod) == modHelper.toEnum(mod);
+                    return modHelper.toEnum(map.mods) == modHelper.toEnum(mod);
                 });
                 maps.sort((a,b) => a.index - b.index);
                 acc[modHelper.toEnum(mod)] = maps;

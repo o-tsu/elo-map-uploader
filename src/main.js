@@ -46,6 +46,7 @@ continue?`)
         new Vue({
             render: h => h(App),
             data: {
+                api: i,
                 pools,
                 user
             }

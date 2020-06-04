@@ -205,12 +205,12 @@ export default {
             if (!this.beatmap) return true;
             else
                 return (
-                    modHelper.toEnum(this.mod) !==
-                    modHelper.toEnum(this.beatmap.mod)
+                    modHelper.toEnum(this.mods) !==
+                    modHelper.toEnum(this.beatmap.mods)
                 );
         },
         disableIndex: function() {
-            return this.modChanged || this.newMap;
+            return this.modsChanged || this.newMap;
         }
     },
     watch: {
@@ -231,7 +231,7 @@ export default {
                 this.modstate = true;
                 if (this.newMap) {
                     return true;
-                } else if (!this.enableIndexInput && this.modChanged) {
+                } else if (!this.enableIndexInput && this.modsChanged) {
                     this.index = 114514;
                 } else {
                     this.index = this.beatmap.index;
@@ -274,7 +274,7 @@ export default {
             if (!this.bid) {
                 this.bidstate = false;
             }
-            if (!this.mod) {
+            if (!this.mods) {
                 this.modstate = false;
             }
             if (!this.stage) {
@@ -297,14 +297,14 @@ export default {
                 // Return our popover form results
                 // this.bidReturn = this.bid;
                 // this.selectorReturn = this.selector;
-                // const apiMap = await this.api.apiGetMap({ id: this.bid, m: this.beatmap.mod });
+                // const apiMap = await this.api.apiGetMap({ id: this.bid, m: this.beatmap.mods });
                 this.$emit("edit-return", {
                     id: this.bid,
                     stage: this.stage,
-                    mod: this.mod,
+                    mods: this.mod,
                     index: parseInt(this.index),
                     selector: this.selector,
-                    modChanged: this.modChanged
+                    modChanged: this.modsChanged
                 });
             }
         },
@@ -312,7 +312,7 @@ export default {
             // This is called just before the popover is shown
             // Reset our popover form variables
             this.bid = !this.newMap ? this.beatmap.id : "";
-            this.mod = !this.newMap ? this.beatmap.mod : this.presetMod;
+            this.mod = !this.newMap ? this.beatmap.mods : this.presetMod;
             this.stage = !this.newMap ? this.beatmap.stage : "";
             this.index = !this.newMap ? this.beatmap.index : 99999;
             this.selector = !this.newMap
@@ -324,7 +324,7 @@ export default {
             this.indexstate = null;
             this.selectorstate = null;
             // this.bidReturn = ''
-            // this.modReturn = ''
+            // this.modsReturn = ''
             // this.selectorReturn = ''
             this.$emit("popup-visible");
         },

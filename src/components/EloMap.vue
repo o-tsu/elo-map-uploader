@@ -173,11 +173,13 @@ module.exports = {
             onPopUpDelay: undefined,
             confirmVariant: "warning",
             autoUpdate: true,
-            fallbackCover: false
+            fallbackCover: false,
+            forceOverlayDisable: false,
         };
     },
     mounted: async function() {
-        await this.beatmap.banchoResult();
+        const result = await this.beatmap.banchoResult();
+        if (!result) this.forceOverlayDisable = true;
     },
     computed: {
         img: function() {
@@ -194,7 +196,7 @@ module.exports = {
         },
         relativeIndex: function() {
             if (this.beatmap.banchoResultReady)
-                return `${this.beatmap.mod.join("")}${this.beatmap.index}`;
+                return `${this.beatmap.mods.join("")}${this.beatmap.index}`;
             else return "no map";
         },
         text: function() {
@@ -208,7 +210,7 @@ module.exports = {
             if (this.beatmap.banchoResultReady) {
                 return `bm-${this.beatmap.id}-${
                     this.beatmap.stage
-                }-${this.beatmap.mod.join("")}${this.beatmap.index}`;
+                }-${this.beatmap.mods.join("")}${this.beatmap.index}`;
             } else return "no index";
         },
         readableLength: function() {
@@ -228,7 +230,7 @@ module.exports = {
             return Object.keys(this.splitted);
         },
         ready: function() {
-            return (this.beatmap && this.beatmap.banchoResultReady) || false;
+            return (this.beatmap && this.beatmap.banchoResultReady) || this.forceOverlayDisable;
         },
         difficultyBreakdown: function() {
             if (this.beatmap.banchoResultReady) {
@@ -250,7 +252,7 @@ module.exports = {
             }
         },
         enumMapMod: function() {
-            return modHelper.toEnum(this.beatmap.mod);
+            return modHelper.toEnum(this.beatmap.mods);
         }
     },
     methods: {
@@ -400,14 +402,14 @@ module.exports = {
         ) {
             if (
                 this.beatmap.stage == stage &&
-                modHelper.toEnum(this.beatmap.mod) == modHelper.toEnum(mod)
+                modHelper.toEnum(this.beatmap.mods) == modHelper.toEnum(mod)
             ) {
                 return;
             }
             if (autoUpdate) await this.delete();
             await this.moveToEnd(false);
             this.beatmap.stage = stage;
-            this.beatmap.mod = mod;
+            this.beatmap.mods = mod;
             this.beatmap.index = this.getNewIndexInStageMod(stage, mod);
             //dest[destLength + 1] = this.beatmap;
 
@@ -455,14 +457,14 @@ module.exports = {
         editReturnMap: async function(beatmap) {
             this.$root.$emit("t-log", beatmap, "edit returns");
             await this.delete();
-            const modChanged = beatmap.modChanged;
-            delete beatmap.modChanged;
+            const modChanged = beatmap.modsChanged;
+            delete beatmap.modsChanged;
 
             this.beatmap = Object.assign(this.beatmap, beatmap);
             if (modChanged) {
                 this.beatmap.index = this.getNewIndexInStageMod(
                     beatmap.stage,
-                    beatmap.mod
+                    beatmap.mods
                 );
             }
             await this.beatmap.banchoResult();
@@ -473,6 +475,7 @@ module.exports = {
             this.$root.$emit("delete-map", map);
             const result = await map.delete();
             this.$root.$emit("t-log", result);
+            if (this.beatmap._id == map._id) this.$root.$emit('need-update');
             return result;
         },
         async upload(map = this.beatmap) {

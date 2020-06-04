@@ -44,7 +44,7 @@ export default {
         nameOfPools: function() {
             if (this.pools) {
                 const pools = this.pools.map(pool => ({
-                    value: pool.id,
+                    value: pool.name,
                     text: pool.name
                 }));
                 pools.push({
@@ -62,14 +62,16 @@ export default {
     },
     watch: {
         pool: function(val) {
+            console.log(val)
             this.switchPool({ value: val });
+            // this.pool = ""
         }
     },
     methods: {
         switchPool(event) {
             console.log("switch-pool event", event);
             this.$emit("switch-pool", {
-                id: event.value,
+                name: event.value,
             });
         }
     }

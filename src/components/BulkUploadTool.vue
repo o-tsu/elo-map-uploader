@@ -118,7 +118,7 @@ export default {
                 // Return our popover form results
                 // this.textareaReturn = this.textarea;
                 // this.selectorReturn = this.selector;
-                // const apiMap = await this.api.apiGetMap({ id: this.textarea, m: this.beatmap.mod });
+                // const apiMap = await this.api.apiGetMap({ id: this.textarea, m: this.beatmap.mods });
                 this.$emit("bulk-return", this.list);
             }
         },
