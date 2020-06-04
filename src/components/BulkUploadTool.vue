@@ -98,6 +98,7 @@ export default {
                     this.list = r.toList();
                     this.textareastate = true;
                 } catch(e){
+                    console.log(e)
                     this.textareastate = false;
                     this.list = [];
                 }

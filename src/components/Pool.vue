@@ -212,15 +212,22 @@ module.exports = {
         },
         async bulkReturnList(list) {
             console.log(list);
+            let mods = {};
             const maps = list
                 .map(map => {
                     if (!map.id) return;
+                    const rawMod = modHelper.toEnum(map.mods)
+                    if (!mods[rawMod]) mods[rawMod] = 0;
+                    mods[rawMod] +=1;
+                    map.index = mods[rawMod];
                     return EloMap.create(map, this.pool, this.pool.api);
                 })
                 .filter(map => map);
+            // console.log(maps.map(map => map.toApiStruct()))
             //actual upload routine
             //fake one
             const results = await Promise.all(maps.map(map => map.upload()));
+            // const results = await this.pool.api.uploadMaps
             console.log({ maps, results });
             this.maps.push(...maps);
         },
