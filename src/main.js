@@ -14,6 +14,7 @@ Vue.component('vue-search-select', ModelSelect)
 import 'bootstrap/dist/css/bootstrap.css'
 import 'bootstrap-vue/dist/bootstrap-vue.css'
 import 'vue-search-select/dist/VueSearchSelect.css'
+import Axios from 'axios'
 
 const UniqueId = require('vue-unique-id');
 Vue.use(UniqueId);
@@ -21,37 +22,49 @@ Vue.use(UniqueId);
 Vue.config.productionTip = false
 
 const { MapPool } = require('elo-mappool-client');
-let token = "b3b539d7b4310cc90695c391c2725009d2e2c93d13d6f373945e5de53eaa8449862efbe3ef5c8db027f85f42b3d530ae1fd5e52e4b03b582e04ed484eb7d3db4";
-let submitter = 1123053
+let token = "password";
+let submitter = 'exposive'
+async function login() {
+    submitter = prompt("account : ", submitter);
+    token = prompt("password : ", token);
+    // document.cookie = cookie;
+    const account = await Axios({
+        url: `http://otsu.fun:9529/loginByAccount`,
+        data: {
+            username: submitter,
+            password: token
+        },
+        method: "POST"
+    }).then(res => res.data)
+    confirm(`result: ${JSON.stringify(account, null, 2)}
+continue?`)
+    return account
+}
 
 async function start() {
-    submitter = prompt("numeric osu id : ", submitter);
-    token = prompt("otsu token : ", token);
-    // document.cookie = cookie;
-    const result = confirm(`submitter: ${submitter},
-token: ${token}
-continue?`)
-    if (result) {
-        const user = {
-            id: submitter,
-            token
-        }
-        const i = new MapPool({
-            autoComplete: false,
-            user
-        });
-        const pools = await i.getPools();
-        //await Promise.all(pools.map(async pool => await pool.getMaps()))
-        pools.map(pool => pool.submitter = submitter)
-        new Vue({
-            render: h => h(App),
-            data: {
-                api: i,
-                pools,
-                user
-            }
-        }).$mount('#app')
+    const result = await login()
+    if (result.status == -1) {
+        return start()
     }
+    const user = {
+        id: result.data.userInfo.osuid,
+        token: result.data.authorization.token
+    }
+    const i = new MapPool({
+        autoComplete: false,
+        user
+    });
+    const pools = await i.getPools();
+    //await Promise.all(pools.map(async pool => await pool.getMaps()))
+    pools.map(pool => pool.submitter = submitter)
+    new Vue({
+        render: h => h(App),
+        data: {
+            api: i,
+            pools,
+            user
+        }
+    }).$mount('#app')
 }
 
 start()
