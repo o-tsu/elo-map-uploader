@@ -191,7 +191,20 @@ export default {
             ];
         },
         existMods: function() {
-            return ["NM", "HR", "DT", "HD", "TB"];
+            return [
+                "NM",
+                "EZ",
+                "NF",
+                "HT",
+                "HR",
+                "DT",
+                "NC",
+                "HD",
+                "FL",
+                "FM",
+                "RX",
+                "TB"
+            ];
         },
         variant: function() {
             return this.confirmVariant || `primary`;

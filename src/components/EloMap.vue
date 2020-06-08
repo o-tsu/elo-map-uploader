@@ -118,7 +118,7 @@
     </b-col>
 </template>
 <script>
-const { MapList } = require("elo-mappool-client");
+// const { MapList } = require("elo-mappool-client");
 const modHelper = require("../helpers/enum");
 // const defaultString = {
 //     type: String,
@@ -484,16 +484,16 @@ module.exports = {
             this.$root.$emit("t-log", result);
             return result;
         },
-        async bulkUpload(maps = [this.beatmap]) {
-            const mapList = new MapList(
-                maps,
-                this.beatmap.pool,
-                this.beatmap.api
-            );
-            this.$root.$emit("t-log", maps, "bulk-uploads");
-            const result = await mapList.upload();
-            this.$root.$emit("t-log", result);
-        },
+        // async bulkUpload(maps = [this.beatmap]) {
+        //     const mapList = new MapList(
+        //         maps,
+        //         this.beatmap.pool,
+        //         this.beatmap.api
+        //     );
+        //     this.$root.$emit("t-log", maps, "bulk-uploads");
+        //     const result = await mapList.upload();
+        //     this.$root.$emit("t-log", result);
+        // },
         // resort: function() {
         //     for (let mods in this.sameStage) {
         //         mods = Object.entries(mods).reduce((acc, map) => {

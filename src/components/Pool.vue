@@ -8,7 +8,7 @@
                 <div class="text-center mt-1 mb-1">
                     <b-button-toolbar>
                         <b-button-group>
-                            <b-button>delete all maps</b-button>
+                            <b-button @click="deleteAll">delete all maps</b-button>
                             <b-button @click="getMaps">sync</b-button>
                         </b-button-group>
                     </b-button-toolbar>
@@ -138,10 +138,10 @@ module.exports = {
         },
         mods: function() {
             let result;
-            if (this.maps !== null) {
+            if (this.maps !== null && this.maps !== undefined) {
                 result = this.maps.reduce((acc, cur) => {
                     // console.log('pool.mods.reduce',cur.mods)
-                    const rawMod = modHelper.toEnum(cur.mods);
+                    const rawMod = modHelper.toEnum(cur.mods || []);
                     if (!acc.includes(rawMod)) {
                         acc.push(rawMod);
                     }
@@ -171,6 +171,9 @@ module.exports = {
         }
     },
     methods: {
+        async deleteAll(){
+            await this.pool.maps.deleteAll()
+        },
         async updatePool() {
             // this.hh += 1;
             // console.log("need update");
@@ -195,7 +198,7 @@ module.exports = {
         splitListByMods: function(list) {
             return this.mods.reduce((acc, mod) => {
                 const maps = list.filter(map => {
-                    return modHelper.toEnum(map.mods) == modHelper.toEnum(mod);
+                    return modHelper.toEnum(map.mods || []) == modHelper.toEnum(mod);
                 });
                 acc[modHelper.toEnum(mod)] = this.createListFromArrayByIndex(
                     maps
