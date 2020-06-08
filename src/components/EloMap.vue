@@ -3,10 +3,10 @@
         <b-overlay :show="!ready" rounded="sm">
             <b-card
                 no-body
-                style="min-width: 27em;"
+                style="min-width: 30em;"
                 @mouseover="hoverCard(true)"
                 @mouseleave="hoverCard(false)"
-                class="overflow-hidden mb-2"
+                class=" mb-2"
             >
                 <template v-slot:header>
                     <b-badge pill class="mr-1">{{relativeIndex}}</b-badge>
@@ -25,11 +25,11 @@
                     class="rounded-0"
                     @error="setFallbackCover"
                 />
-                <b-collapse v-model="hover">
+                <!-- <b-collapse v-model="hover">
                     <b-card-body>
                         <span v-html="text"></span>
                         <br />
-                        <!-- when hover -->
+
 
                         <b-button-group>
                             <b-button
@@ -39,8 +39,7 @@
                                 variant="primary"
                             >{{index}}</b-button>
                         </b-button-group>
-                        <!-- not hovered -->
-                        <!-- <b-collapse :visible="!hover"></b-collapse> -->
+
                     </b-card-body>
                     <b-collapse
                         v-for="(list,index) in {objects: beatmap.objects,length: readableLength}"
@@ -50,7 +49,7 @@
                     >
                         <KVList :list="list" />
                     </b-collapse>
-                </b-collapse>
+                </b-collapse> -->
 
                 <b-collapse v-model="hover">
                     <b-card-footer>

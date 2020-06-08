@@ -1,6 +1,6 @@
 <template>
     <div>
-        <div v-for="(maps,modEnum) in splitByMods" :key="`elo-${stage}-${toModStr(modEnum)}`">
+        <div v-for="(maps,modEnum) in splitByMods" :key="`elo-${stage}-${toModStr(modEnum)}`" class="pb-5">
             <h3 :id="`elo-${stage}-${toModStr(modEnum)}`">
                 <b-badge variant="primary">{{toModStr(modEnum)}}</b-badge>
                 <b-badge variant="light">{{maps.length}} maps</b-badge>

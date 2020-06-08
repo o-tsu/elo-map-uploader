@@ -1,6 +1,6 @@
 <template>
     <div>
-        <h2 :id="`elo-${stage}`">
+        <h2 :id="`elo-${stage}`" class="pb-4">
             <b-badge variant="primary">{{stage}}</b-badge>
             <b-badge variant="light">{{countMaps}} maps</b-badge>
             <b-button v-b-toggle="`collapse-${stage}`">
