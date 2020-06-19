@@ -153,6 +153,7 @@ class Reader {
     setDefaultLineReader(lineReader) {
         Object.entries({
             hash: 'hashDataLine',
+            bid: 'bidDataLine'
         }).map(([type, reader]) => {
             if (type == lineReader) {
                 this.defaultReader = reader;

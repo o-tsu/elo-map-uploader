@@ -15,6 +15,7 @@ import 'bootstrap/dist/css/bootstrap.css'
 import 'bootstrap-vue/dist/bootstrap-vue.css'
 import 'vue-search-select/dist/VueSearchSelect.css'
 import Axios from 'axios'
+import router from './router'
 
 const UniqueId = require('vue-unique-id');
 Vue.use(UniqueId);
@@ -59,6 +60,8 @@ async function start() {
     pools.map(pool => pool.submitter = submitter)
     new Vue({
         render: h => h(App),
+        router,
+
         data: {
             api: i,
             pools,
